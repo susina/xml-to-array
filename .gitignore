@@ -1,0 +1,6 @@
+*.cache
+clover.xml
+composer.phar
+composer.lock
+coverage/
+vendor/
