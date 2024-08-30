@@ -42,6 +42,21 @@ class Converter
      */
     public function convert(string $xmlToParse): array
     {
+        $content = json_encode($this->getSimpleXml($xmlToParse), JSON_NUMERIC_CHECK);
+        $array = json_decode($content, true);
+
+        $array = $this->mergeAttributes($array);
+        $this->convertBool($array);
+        $array = $this->idToKey($array);
+    
+        return $array;
+    }
+
+    /**
+     * Parse an XML string and return the relative SimpleXmlElement object.
+     */
+    private function getSimpleXml(string $xmlToParse): SimpleXMLElement
+    {
         $currentInternalErrors = libxml_use_internal_errors(true);
 
         $xml = simplexml_load_string($xmlToParse);
@@ -58,13 +73,7 @@ class Converter
             throw new ConverterException($errors);
         }
 
-        $content = json_encode($xml, JSON_NUMERIC_CHECK);
-        $array = json_decode($content, true);
-
-        $array = $this->mergeAttributes($array);
-        $this->convertBool($array);
-
-        return $array;
+        return $xml;
     }
 
     /**
@@ -90,7 +99,7 @@ class Converter
     }
 
     /**
-     * Convert all strings reperesenting boolean values ('True', 'False' etc.)
+     * Convert all truely and falsy strings ('True', 'False' etc.)
      * into boolean values.
      * 
      * @param array $array The array to parse.
@@ -104,5 +113,58 @@ class Converter
                 default => $value
             };
         });
+    }
+
+    private function idToKey(array $array): array
+    {
+        $out = [];
+        foreach ($array as $key => $value) {
+            if(!is_array($value)) {
+                $out[$key] = $value;
+                continue;
+            }
+            
+            if (!$this->hasIdToMerge($value)) {
+                $out[$key] = $this->idToKey($value);
+                continue;
+            }
+
+            foreach ($value as $k => $v) {
+                if (!is_array($v)) {
+                    $out[$key][$k] = $v;
+                    continue;
+                }
+                
+                $out[$key] = array_merge($out[$key], $this->getIdArray($v));
+            }
+        }
+
+        return $out;
+    }
+
+    private function hasIdToMerge(array $array): bool
+    {
+        $hasId = false;
+        foreach ($array as $value) {
+            if (is_array($value) && array_is_list($value)) {
+                foreach ($value as $v) {
+                    if (is_array($v) && array_key_exists('id', $v)) {
+                        $hasId = true;
+                    }
+                }
+            }
+        }
+
+        return $hasId;
+    }
+
+    private function getIdArray(array $array): array
+    {
+        $out = [];
+        foreach ($array as $value) {
+            $out[$value['id']] = array_diff_key($value, ['id' => true]);
+        }
+        
+        return $out;
     }
 }

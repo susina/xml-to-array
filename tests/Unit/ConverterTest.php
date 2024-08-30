@@ -81,4 +81,4 @@ XML;
 it('converts Id attribute into an associative array key', function (string $xml, array $expected) {
     $actual = Converter::create()->convert($xml);
     expect($actual)->toBe($expected);
-})->with('TestId')->toDo('Implement this feature');
+})->with('TestId');
