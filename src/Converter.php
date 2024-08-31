@@ -15,20 +15,37 @@
 
 namespace Susina\XmlToArray;
 
+use InvalidArgumentException;
 use SimpleXMLElement;
 use Susina\XmlToArray\Exception\ConverterException;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Class to convert an xml string to array
  */
 class Converter
 {
+    private array $options;
+
     /**
      * Static constructor.
      */
-    public static function create(): self
+    public static function create(array $options = []): self
     {
-        return new self();
+        return new self($options);
+    }
+
+    public function __construct(array $options = [])
+    {
+        $this->options['mergeAttributes'] = $options['mergeAttributes'] ?? true;
+        $this->options['idAsKey'] = $options['idAsKey'] ?? true;
+        $this->options['typesAsString'] = $options['typesAsString'] ?? false;
+
+        array_walk($this->options, function ($value, $key) {
+            if (!is_bool($value)) {
+                throw new InvalidArgumentException("The option `$key` should be boolean: {gettype($value)} given.");
+            }
+        });
     }
 
     /**
@@ -42,13 +59,14 @@ class Converter
      */
     public function convert(string $xmlToParse): array
     {
-        $content = json_encode($this->getSimpleXml($xmlToParse), JSON_NUMERIC_CHECK);
+        $flags = $this->options['typesAsString'] === false ? JSON_NUMERIC_CHECK : 0;
+        $content = json_encode($this->getSimpleXml($xmlToParse), $flags);
         $array = json_decode($content, true);
 
-        $array = $this->mergeAttributes($array);
-        $this->convertBool($array);
-        $array = $this->idToKey($array);
-    
+        $array = $this->options['mergeAttributes'] === true ? $this->mergeAttributes($array) : $array;
+        $array = $this->options['typesAsString'] === false ? $this->convertBool($array) : $array;
+        $array = $this->options['idAsKey'] === true ? $this->idToKey($array) : $array;
+
         return $array;
     }
 
@@ -101,10 +119,8 @@ class Converter
     /**
      * Convert all truely and falsy strings ('True', 'False' etc.)
      * into boolean values.
-     * 
-     * @param array $array The array to parse.
      */
-    private function convertBool(array &$array): void
+    private function convertBool(array $array): array
     {
         array_walk_recursive($array, function (mixed &$value): void {
             $value = match(true) {
@@ -113,17 +129,19 @@ class Converter
                 default => $value
             };
         });
+
+        return $array;
     }
 
     private function idToKey(array $array): array
     {
         $out = [];
         foreach ($array as $key => $value) {
-            if(!is_array($value)) {
+            if (!is_array($value)) {
                 $out[$key] = $value;
                 continue;
             }
-            
+
             if (!$this->hasIdToMerge($value)) {
                 $out[$key] = $this->idToKey($value);
                 continue;
@@ -134,7 +152,7 @@ class Converter
                     $out[$key][$k] = $v;
                     continue;
                 }
-                
+
                 $out[$key] = array_merge($out[$key], $this->getIdArray($v));
             }
         }
@@ -164,7 +182,7 @@ class Converter
         foreach ($array as $value) {
             $out[$value['id']] = array_diff_key($value, ['id' => true]);
         }
-        
+
         return $out;
     }
 }
