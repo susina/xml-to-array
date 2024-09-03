@@ -82,3 +82,18 @@ it('converts Id attribute into an associative array key', function (string $xml,
     $actual = Converter::create()->convert($xml);
     expect($actual)->toBe($expected);
 })->with('TestId');
+
+it('converts an XML string without merging @attributes key', function (string $xml, array $expected) {
+    $actual = Converter::create(['mergeAttributes' => false])->convert($xml);
+    expect($actual)->toBe($expected);
+})->with('XmlWithAttributes');
+
+it('converts an XML string without preserving data types', function (string $xml, array $expected) {
+    $actual = Converter::create(['typesAsString' => true])->convert($xml);
+    expect($actual)->toBe($expected);
+})->with('XmlNoTypes');
+
+it('leave Id attribute as normal attribute', function (string $xml, array $expected) {
+    $actual = Converter::create(['idAsKey' => false])->convert($xml);
+    expect($actual)->toBe($expected);
+})->with('NoIdConversion');

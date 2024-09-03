@@ -13,7 +13,8 @@
         "php": ">=8.2",
         "ext-libxml": "*",
         "ext-simplexml": "*",
-        "ext-dom": "*"
+        "ext-dom": "*",
+        "symfony/options-resolver": "^7.1"
     },
     "autoload": {
         "psr-4": {

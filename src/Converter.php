@@ -37,15 +37,22 @@ class Converter
 
     public function __construct(array $options = [])
     {
-        $this->options['mergeAttributes'] = $options['mergeAttributes'] ?? true;
-        $this->options['idAsKey'] = $options['idAsKey'] ?? true;
-        $this->options['typesAsString'] = $options['typesAsString'] ?? false;
+        $resolver = new OptionsResolver();
+        $this->configureOptions($resolver);
+        $this->options = $resolver->resolve($options);
+    }
 
-        array_walk($this->options, function ($value, $key) {
-            if (!is_bool($value)) {
-                throw new InvalidArgumentException("The option `$key` should be boolean: {gettype($value)} given.");
-            }
-        });
+    private function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'mergeAttributes' => true,
+            'idAsKey' => true,
+            'typesAsString' => false
+        ]);
+
+        $resolver->setAllowedTypes('mergeAttributes', 'bool');
+        $resolver->setAllowedTypes('idAsKey', 'bool');
+        $resolver->setAllowedTypes('typesAsString', 'bool');
     }
 
     /**
