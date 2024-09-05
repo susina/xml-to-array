@@ -1,0 +1,31 @@
+# Run test suite
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    name: test
+    strategy:
+      fail-fast: false
+      matrix:
+        operating-system: [ubuntu-latest, windows-latest, macOS-latest]
+        php-versions: ['8.2', '8.3']
+    runs-on: ${{ matrix.operating-system }}
+    steps:
+      - name: Set autocrlf on windows
+        if: matrix.operating-system == 'windows-latest'
+        run: git config --global core.autocrlf false
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          coverage: none
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          composer-options: "--prefer-dist --optimize-autoloader"
+      - name: Check coding standard
+        run: composer cs:check
+      - name: Test suite
+        run: composer test
