@@ -28,6 +28,8 @@ class Converter
 
     /**
      * Static constructor.
+     *
+     * @psalm-suppress PossiblyUnusedMethod Public api
      */
     public static function create(array $options = []): self
     {
@@ -62,6 +64,8 @@ class Converter
      * @return array
      *
      * @throws ConverterException If errors while parsing XML.
+     *
+     * @psalm-suppress PossiblyUnusedMethod Public api
      */
     public function convert(string $xmlToParse): array
     {
@@ -93,7 +97,7 @@ class Converter
         libxml_clear_errors();
         libxml_use_internal_errors($currentInternalErrors);
 
-        if (count($errors) > 0) {
+        if ($xml === false) {
             throw new ConverterException($errors);
         }
 

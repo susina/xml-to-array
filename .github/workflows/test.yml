@@ -25,7 +25,9 @@ jobs:
         uses: ramsey/composer-install@v3
         with:
           composer-options: "--prefer-dist --optimize-autoloader"
-      - name: Check coding standard
+      - name: Coding standard
         run: composer cs:check
+      - name: Psalm issues
+        run: composer analytics
       - name: Test suite
         run: composer test
