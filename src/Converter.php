@@ -15,7 +15,6 @@
 
 namespace Susina\XmlToArray;
 
-use InvalidArgumentException;
 use SimpleXMLElement;
 use Susina\XmlToArray\Exception\ConverterException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -112,12 +111,8 @@ class Converter
                 $out = array_merge($out, $value);
                 continue;
             }
-            if (is_array($value)) {
-                $out[$key] = $this->mergeAttributes($value);
-                continue;
-            }
 
-            $out[$key] = $value;
+            $out[$key] = is_array($value) ? $this->mergeAttributes($value) : $value;
         }
 
         return $out;
@@ -172,11 +167,7 @@ class Converter
         $hasId = false;
         foreach ($array as $value) {
             if (is_array($value) && array_is_list($value)) {
-                foreach ($value as $v) {
-                    if (is_array($v) && array_key_exists('id', $v)) {
-                        $hasId = true;
-                    }
-                }
+                $hasId = $this->hasId($value);
             }
         }
 
@@ -191,5 +182,16 @@ class Converter
         }
 
         return $out;
+    }
+
+    private function hasId(array $array): bool
+    {
+        foreach ($array as $v) {
+            if (is_array($v) && array_key_exists('id', $v)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
