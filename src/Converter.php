@@ -112,7 +112,7 @@ class Converter
                 continue;
             }
 
-            $out[$key] = is_array($value) ? $this->mergeAttributes($value) : $value; 
+            $out[$key] = is_array($value) ? $this->mergeAttributes($value) : $value;
         }
 
         return $out;
