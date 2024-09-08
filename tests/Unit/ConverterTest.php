@@ -97,3 +97,23 @@ it('leave Id attribute as normal attribute', function (string $xml, array $expec
     $actual = Converter::create(['idAsKey' => false])->convert($xml);
     expect($actual)->toBe($expected);
 })->with('NoIdConversion');
+
+it('converts an XML string preserving the first tag', function () {
+    $expected = [
+        'breakfast_menu' => [
+            'food' => [
+                'name' => 'Waffles'
+            ],
+        ]
+    ];
+
+    $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
+<breakfast_menu>
+    <food>
+        <name>Waffles</name>
+    </food>
+</breakfast_menu>";
+
+    $actual = Converter::create(['preserveFirstTag' => true])->convert($xml);
+    expect($actual)->toBe($expected);
+});
