@@ -44,5 +44,57 @@ dataset('TestId', [
                 ]
             ]
         ]
+    ],
+    [
+        "<?xml version='1.0' standalone='yes'?>
+<directors>
+    <director name=\"George Lucas\">
+        <movie>
+            <title>Star Wars</title>
+            <actor id=\"actorH\" name=\"Harrison Ford\" />
+            <actor id=\"actorM\" name=\"Mark Hamill\" />
+            <actor id=\"actorC\" name=\"Carrie Fisher\" />
+        </movie>
+        <movie>
+            <title>The empire strikes back</title>
+            <actor id=\"actorH\" name=\"Harrison Ford\" />
+            <actor id=\"actorM\" name=\"Mark Hamill\" />
+            <actor id=\"actorC\" name=\"Carrie Fisher\" />
+        </movie>
+    </director>
+</directors>",
+        [
+            'director' => [
+                'name' => 'George Lucas',
+                'movie' => [
+                    0 => [
+                        'title' => 'Star Wars',
+                        'actorH' => ['name' => 'Harrison Ford'],
+                        'actorM' => ['name' => 'Mark Hamill'],
+                        'actorC' => ['name' => 'Carrie Fisher']
+                    ],
+                    1 => [
+                        'title' => 'The empire strikes back',
+                        'actorH' => ['name' => 'Harrison Ford'],
+                        'actorM' => ['name' => 'Mark Hamill'],
+                        'actorC' => ['name' => 'Carrie Fisher']
+                    ]
+                ]
+            ]
+        ]
+    ],
+    [
+        "<movie>
+            <title>Star Wars</title>
+            <actor id=\"actorH\" name=\"Harrison Ford\" />
+            <actor id=\"actorM\" name=\"Mark Hamill\" />
+            <actor id=\"actorC\" name=\"Carrie Fisher\" />
+        </movie>",
+        [
+            'title' => 'Star Wars',
+            'actorH' => ['name' => 'Harrison Ford'],
+            'actorM' => ['name' => 'Mark Hamill'],
+            'actorC' => ['name' => 'Carrie Fisher']
+        ]
     ]
 ]);

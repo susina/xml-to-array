@@ -77,5 +77,25 @@ dataset('Xml', [
             ],
         ]
     ]
+    ],
+    [
+        '<?xml version="1.0"?><root><!-- This is a comment --><node>foo</node></root>',
+        ['node' => 'foo'],
+    ],
+    [
+        '<?xml version="1.0"?><root><node foo="bar"></node></root>',
+        ['node' => ['foo' => 'bar']],
+    ],
+    [
+        '<?xml version="1.0"?><root><node>0</node></root>',
+        ['node' => 0]
+    ],
+    [
+        '<?xml version="1.0"?><root><node /></root>',
+        ['node' => null]
+    ],
+    [
+        '<?xml version="1.0"?><root><node><![CDATA[<salutation>Hello World!</salutation>]]></node></root>',
+        ['node' => '<salutation>Hello World!</salutation>']
     ]
 ]);

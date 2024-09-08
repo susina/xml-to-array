@@ -48,12 +48,14 @@ class Converter
         $resolver->setDefaults([
             'mergeAttributes' => true,
             'idAsKey' => true,
-            'typesAsString' => false
+            'typesAsString' => false,
+            'preserveFirstTag' => false
         ]);
 
         $resolver->setAllowedTypes('mergeAttributes', 'bool');
         $resolver->setAllowedTypes('idAsKey', 'bool');
         $resolver->setAllowedTypes('typesAsString', 'bool');
+        $resolver->setAllowedTypes('preserveFirstTag', 'bool');
     }
 
     /**
@@ -69,12 +71,15 @@ class Converter
      */
     public function convert(string $xmlToParse): array
     {
+        $xmlToParse = $this->normalizeXml($xmlToParse);
         $flags = $this->options['typesAsString'] === false ? JSON_NUMERIC_CHECK : 0;
+
         $content = json_encode($this->getSimpleXml($xmlToParse), $flags);
         $array = json_decode($content, true);
 
         $array = $this->options['mergeAttributes'] === true ? $this->mergeAttributes($array) : $array;
         $array = $this->options['typesAsString'] === false ? $this->convertBool($array) : $array;
+        $array = $this->options['typesAsString'] === false ? $this->convertEmptyArrayToNull($array) : $this->convertEmptyArrayToNull($array, true);
         $array = $this->options['idAsKey'] === true ? $this->idToKey($array) : $array;
 
         return $array;
@@ -139,9 +144,21 @@ class Converter
         return $array;
     }
 
+    private function convertEmptyArrayToNull(array $array, bool $toString = false): array
+    {
+        return array_map(function (mixed $value) use ($toString) {
+            return match (true) {
+                $value === [] => $toString ? 'null' : null,
+                is_array($value) => $this->convertEmptyArrayToNull($value),
+                default => $value
+            };
+        }, $array);
+    }
+
     private function idToKey(array $array): array
     {
         $out = [];
+
         foreach ($array as $key => $value) {
             if (!is_array($value)) {
                 $out[$key] = $value;
@@ -159,7 +176,7 @@ class Converter
                     continue;
                 }
 
-                $out[$key] = array_merge($out[$key], $this->getIdArray($v));
+                $out[$v['id']] = array_diff_key($v, ['id' => true]);
             }
         }
 
@@ -168,34 +185,31 @@ class Converter
 
     private function hasIdToMerge(array $array): bool
     {
-        $hasId = false;
         foreach ($array as $value) {
-            if (is_array($value) && array_is_list($value)) {
-                $hasId = $this->hasId($value);
-            }
-        }
-
-        return $hasId;
-    }
-
-    private function getIdArray(array $array): array
-    {
-        $out = [];
-        foreach ($array as $value) {
-            $out[$value['id']] = array_diff_key($value, ['id' => true]);
-        }
-
-        return $out;
-    }
-
-    private function hasId(array $array): bool
-    {
-        foreach ($array as $v) {
-            if (is_array($v) && array_key_exists('id', $v)) {
+            if (is_array($value) && array_key_exists('id', $value)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private function normalizeXml(string $xml): string
+    {
+        $xml = preg_replace_callback_array([
+            '/<\?([\\s\\S]*?)\?>/' => fn (): string => '',  //Remove header
+            '/<!--([\\s\\S]*?)-->/' => fn (): string => '', //Remove comments
+            '/<!\[CDATA\[([\\s\\S]*?)\]\]>/' => function (array $matches): string {
+                /** @var string $matches[1] */
+                return str_replace(['<', '>'], ['&lt;', '&gt;'], $matches[1]);
+            } //Convert CDATA into escaped strings
+        ], $xml);
+
+        $xml = $xml ?? '';
+
+        //Add a fake tag to preserve the first one
+        $xml = $this->options['preserveFirstTag'] === true ? "<fake-tag>$xml</fake-tag>" : $xml;
+
+        return $xml;
     }
 }
