@@ -26,7 +26,7 @@ class FileConverter extends Converter
      *
      * @throws \RuntimeException If the file does not exist or it's not readable.
      *
-     * @psalm-suppress ParamNameMismatch It's a desired behavior, since in this method the parameter 
+     * @psalm-suppress ParamNameMismatch It's a desired behavior, since in this method the parameter
      *                                   is a filename while in the parent methods it's the xml to convert.
      */
     public function convert(string $filename): array

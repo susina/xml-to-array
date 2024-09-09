@@ -34,7 +34,7 @@ class Converter
         return new static($options);
     }
 
-    public final function __construct(array $options = [])
+    final public function __construct(array $options = [])
     {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
