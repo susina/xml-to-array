@@ -22,7 +22,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 /**
  * Class to convert an xml string to array
  */
-class Converter
+final class Converter
 {
     private array $options;
 
@@ -41,21 +41,6 @@ class Converter
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
         $this->options = $resolver->resolve($options);
-    }
-
-    private function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([
-            'mergeAttributes' => true,
-            'idAsKey' => true,
-            'typesAsString' => false,
-            'preserveFirstTag' => false
-        ]);
-
-        $resolver->setAllowedTypes('mergeAttributes', 'bool');
-        $resolver->setAllowedTypes('idAsKey', 'bool');
-        $resolver->setAllowedTypes('typesAsString', 'bool');
-        $resolver->setAllowedTypes('preserveFirstTag', 'bool');
     }
 
     /**
@@ -83,6 +68,45 @@ class Converter
         $array = $this->options['idAsKey'] === true ? $this->idToKey($array) : $array;
 
         return $array;
+    }
+
+    /**
+     * Create a PHP array from an XML file.
+     *
+     * @param string $filename The XML file to parse.
+     *
+     * @return array
+     *
+     * @throws \RuntimeException If the file does not exist or it's not readable
+     *
+     * @psalm-suppress PossiblyUnusedMethod Public api
+     */
+    public function convertFile(string $filename): array
+    {
+        if (!file_exists($filename)) {
+            throw new \RuntimeException("The file `$filename` does not exist.");
+        }
+
+        if (!is_readable($filename)) {
+            throw new \RuntimeException("The file `$filename` is not readable: do you have the correct permissions?");
+        }
+
+        return $this->convert(file_get_contents($filename));
+    }
+
+    private function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'mergeAttributes' => true,
+            'idAsKey' => true,
+            'typesAsString' => false,
+            'preserveFirstTag' => false
+        ]);
+
+        $resolver->setAllowedTypes('mergeAttributes', 'bool');
+        $resolver->setAllowedTypes('idAsKey', 'bool');
+        $resolver->setAllowedTypes('typesAsString', 'bool');
+        $resolver->setAllowedTypes('preserveFirstTag', 'bool');
     }
 
     /**

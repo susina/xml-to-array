@@ -96,5 +96,38 @@ dataset('TestId', [
             'actorM' => ['name' => 'Mark Hamill'],
             'actorC' => ['name' => 'Carrie Fisher']
         ]
+    ],
+    [
+        "<?xml version='1.0' standalone='yes'?>
+<movies>
+    <movie>
+        <title>Star Wars</title>
+        <starred>True</starred>
+        <actor id=\"actorH\" name=\"Harrison Ford\" />
+        <actor id=\"actorM\" name=\"Mark Hamill\" />
+        <actor id=\"actorC\" name=\"Carrie Fisher\" />
+        <actor>Michelle Pfeiffer</actor>
+    </movie>
+    <movie>
+        <title>The Lord Of The Rings</title>
+        <starred>false</starred>
+    </movie>
+</movies>",
+        [
+            'movie' => [
+                0 => [
+                    'title' => 'Star Wars',
+                    'starred' => true,
+                    'actorH' => ['name' => 'Harrison Ford'],
+                    'actorM' => ['name' => 'Mark Hamill'],
+                    'actorC' => ['name' => 'Carrie Fisher'],
+                    "actor" => [3 => 'Michelle Pfeiffer']
+                ],
+                1 => [
+                    'title' => 'The Lord Of The Rings',
+                    'starred' => false
+                ]
+            ]
+        ]
     ]
 ]);

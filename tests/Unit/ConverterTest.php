@@ -21,6 +21,10 @@ beforeEach(function () {
     $this->converter = new Converter();
 });
 
+it('instantiate the correct class, via static constructor', function () {
+    expect(Converter::create())->toBeInstanceOf(Converter::class);
+});
+
 it('converts xml to array', function (string $xml, array $expected) {
     $actual = $this->converter->convert($xml);
     expect($actual)->toBe($expected);
@@ -117,3 +121,19 @@ it('converts an XML string preserving the first tag', function () {
     $actual = Converter::create(['preserveFirstTag' => true])->convert($xml);
     expect($actual)->toBe($expected);
 });
+
+it('converts an XML file to an array', function (string $xml, array $expected) {
+    $file = vfsStream::newFile("test_file.xml")->at($this->getRoot())->setContent($xml);
+    $actual = $this->converter->convertFile($file->url());
+
+    expect($expected)->toBe($actual);
+})->with('Xml');
+
+it('try to convert a not existent file', function () {
+    $this->converter->convertFile('vfs://root/notexistent.xml');
+})->throws(\RuntimeException::class, 'The file `vfs://root/notexistent.xml` does not exist.');
+
+it('try to convert a not readable file', function () {
+    $file = vfsStream::newFile('notreadable.xml', 200)->at($this->getRoot())->setContent("<root></root>");
+    $this->converter->convertFile($file->url());
+})->throws(\RuntimeException::class, 'The file `vfs://root/notreadable.xml` is not readable: do you have the correct permissions?');
