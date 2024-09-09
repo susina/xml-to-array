@@ -22,21 +22,19 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 /**
  * Class to convert an xml string to array
  */
-final class Converter
+class Converter
 {
     private array $options;
 
     /**
      * Static constructor.
-     *
-     * @psalm-suppress PossiblyUnusedMethod Public api
      */
-    public static function create(array $options = []): self
+    public static function create(array $options = []): static
     {
-        return new self($options);
+        return new static($options);
     }
 
-    public function __construct(array $options = [])
+    public final function __construct(array $options = [])
     {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
@@ -51,8 +49,6 @@ final class Converter
      * @return array
      *
      * @throws ConverterException If errors while parsing XML.
-     *
-     * @psalm-suppress PossiblyUnusedMethod Public api
      */
     public function convert(string $xmlToParse): array
     {
@@ -68,30 +64,6 @@ final class Converter
         $array = $this->options['idAsKey'] === true ? $this->idToKey($array) : $array;
 
         return $array;
-    }
-
-    /**
-     * Create a PHP array from an XML file.
-     *
-     * @param string $filename The XML file to parse.
-     *
-     * @return array
-     *
-     * @throws \RuntimeException If the file does not exist or it's not readable
-     *
-     * @psalm-suppress PossiblyUnusedMethod Public api
-     */
-    public function convertFile(string $filename): array
-    {
-        if (!file_exists($filename)) {
-            throw new \RuntimeException("The file `$filename` does not exist.");
-        }
-
-        if (!is_readable($filename)) {
-            throw new \RuntimeException("The file `$filename` is not readable: do you have the correct permissions?");
-        }
-
-        return $this->convert(file_get_contents($filename));
     }
 
     private function configureOptions(OptionsResolver $resolver): void

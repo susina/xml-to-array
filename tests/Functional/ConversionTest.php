@@ -20,7 +20,7 @@ it('converts real life XML files', function (string $file) {
     $xmlFile = __DIR__ . "/../Fixtures/$file.xml";
 
     $expected = include($phpFile);
-    $actual = Converter::create()->convertFile($xmlFile);
+    $actual = Converter::create()->convert(file_get_contents($xmlFile));
 
     expect($actual)->toBe($expected);
 })->with(['joomla', 'propel']);
