@@ -15,21 +15,64 @@
 
 namespace Susina\XmlToArray;
 
-class FileConverter extends Converter
+class FileConverter
 {
+    private Converter $converter;
+
+    /**
+     * Static constructor.
+     */
+    public static function create(array $options = []): self
+    {
+        return new self($options);
+    }
+
+    /**
+     * @see Susina\XmlToArray\Converter::__construct()
+     */
+    public function __construct(array $options = [])
+    {
+        $this->converter = new Converter($options);
+    }
+
     /**
      * Create a PHP array from an XML file.
      *
-     * @param string $filename The XML file to parse.
+     * @param string $xmlFile The XML file to parse.
      *
      * @return array
      *
      * @throws \RuntimeException If the file does not exist or it's not readable.
      *
-     * @psalm-suppress ParamNameMismatch It's a desired behavior, since in this method the parameter
-     *                                   is a filename while in the parent methods it's the xml to convert.
      */
-    public function convert(string $filename): array
+    public function convert(string $xmlFile): array
+    {
+        $this->assertValidFile($xmlFile);
+
+        return $this->converter->convert(file_get_contents($xmlFile));
+    }
+
+    /**
+     * Convert an XML file to array and save it to file.
+     *
+     * @param string $xmlFile The XML file to parse.
+     * @param string $saveFile The file where to save the parsed array.
+     *
+     * @throw \RuntimeException If the file is not writeable or the directory doesn't exist.
+     */
+    public function convertAndSave(string $xmlFile, string $saveFile): void
+    {
+        $this->assertValidFile($xmlFile);
+
+        $this->converter->convertAndSave(file_get_contents($xmlFile), $saveFile);
+    }
+
+    /**
+     * Check if a file exists and is readable
+     *
+     * @throws \RuntimeException If the file is not writeable or the directory doesn't exist.
+     */
+    private function assertValidFile(string $filename): void
     {
         if (!file_exists($filename)) {
             throw new \RuntimeException("The file `$filename` does not exist.");
@@ -38,7 +81,5 @@ class FileConverter extends Converter
         if (!is_readable($filename)) {
             throw new \RuntimeException("The file `$filename` is not readable: do you have the correct permissions?");
         }
-
-        return parent::convert(file_get_contents($filename));
     }
 }
