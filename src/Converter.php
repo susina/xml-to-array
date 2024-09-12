@@ -53,10 +53,11 @@ final class Converter
     public function convert(string $xmlToParse): array
     {
         $xmlToParse = $this->normalizeXml($xmlToParse);
-        $flags = $this->options['typesAsString'] === false ? JSON_NUMERIC_CHECK : 0;
+        $flags = JSON_THROW_ON_ERROR | ($this->options['typesAsString'] === false ? JSON_NUMERIC_CHECK : 0);
 
         $content = json_encode($this->getSimpleXml($xmlToParse), $flags);
-        $array = json_decode($content, true);
+        /** @var array $array */
+        $array = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
         $array = $this->options['mergeAttributes'] === true ? $this->mergeAttributes($array) : $array;
         $array = $this->options['typesAsString'] === false ? $this->convertBool($array) : $array;
@@ -138,12 +139,16 @@ return " . var_export($array, true) . ";
 
     /**
      * Merge '@attributes' array into parent.
+     *
+     * @psalm-suppress MixedAssignment
      */
     private function mergeAttributes(array $array): array
     {
         $out = [];
+        /** @var mixed $value */
         foreach ($array as $key => $value) {
             if ($key === '@attributes') {
+                /** @var array $value */
                 $out = array_merge($out, $value);
                 continue;
             }
@@ -157,6 +162,8 @@ return " . var_export($array, true) . ";
     /**
      * Convert all truely and falsy strings ('True', 'False' etc.)
      * into boolean values.
+     *
+     * @psalm-suppress MixedAssignment
      */
     private function convertBool(array $array): array
     {
@@ -182,6 +189,11 @@ return " . var_export($array, true) . ";
         }, $array);
     }
 
+    /**
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedArrayAssignment
+     * @psalm-suppress MixedArrayOffset
+     */
     private function idToKey(array $array): array
     {
         $out = [];
@@ -197,6 +209,7 @@ return " . var_export($array, true) . ";
                 continue;
             }
 
+            /** @var mixed $v */
             foreach ($value as $k => $v) {
                 if (!is_array($v)) {
                     $out[$key][$k] = $v;
@@ -212,6 +225,7 @@ return " . var_export($array, true) . ";
 
     private function hasIdToMerge(array $array): bool
     {
+        /** @var mixed $value */
         foreach ($array as $value) {
             if (is_array($value) && array_key_exists('id', $value)) {
                 return true;
