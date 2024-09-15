@@ -1,5 +1,5 @@
 {
-    "name": "susina/xml-converter",
+    "name": "susina/xml-to-array",
     "type": "library",
     "description": "Simple PHP library to convert an XML string into an array",
     "license": "Apache-2.0",
