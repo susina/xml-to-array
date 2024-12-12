@@ -62,7 +62,6 @@ final class Converter
         $array = $this->options['mergeAttributes'] === true ? $this->mergeAttributes($array) : $array;
         $array = $this->options['typesAsString'] === false ? $this->convertBool($array) : $array;
         $array = $this->options['typesAsString'] === false ? $this->convertEmptyArrayToNull($array) : $this->convertEmptyArrayToNull($array, true);
-        $array = $this->options['idAsKey'] === true ? $this->idToKey($array) : $array;
 
         return $array;
     }
@@ -102,13 +101,11 @@ return " . var_export($array, true) . ";
     {
         $resolver->setDefaults([
             'mergeAttributes' => true,
-            'idAsKey' => true,
             'typesAsString' => false,
             'preserveFirstTag' => false
         ]);
 
         $resolver->setAllowedTypes('mergeAttributes', 'bool');
-        $resolver->setAllowedTypes('idAsKey', 'bool');
         $resolver->setAllowedTypes('typesAsString', 'bool');
         $resolver->setAllowedTypes('preserveFirstTag', 'bool');
     }
@@ -187,52 +184,6 @@ return " . var_export($array, true) . ";
                 default => $value
             };
         }, $array);
-    }
-
-    /**
-     * @psalm-suppress MixedAssignment
-     * @psalm-suppress MixedArrayAssignment
-     * @psalm-suppress MixedArrayOffset
-     */
-    private function idToKey(array $array): array
-    {
-        $out = [];
-
-        foreach ($array as $key => $value) {
-            if (!is_array($value)) {
-                $out[$key] = $value;
-                continue;
-            }
-
-            if (!$this->hasIdToMerge($value)) {
-                $out[$key] = $this->idToKey($value);
-                continue;
-            }
-
-            /** @var mixed $v */
-            foreach ($value as $k => $v) {
-                if (!is_array($v)) {
-                    $out[$key][$k] = $v;
-                    continue;
-                }
-
-                $out[$v['id']] = array_diff_key($v, ['id' => true]);
-            }
-        }
-
-        return $out;
-    }
-
-    private function hasIdToMerge(array $array): bool
-    {
-        /** @var mixed $value */
-        foreach ($array as $value) {
-            if (is_array($value) && array_key_exists('id', $value)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private function normalizeXml(string $xml): string

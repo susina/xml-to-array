@@ -82,11 +82,6 @@ XML;
  - Fatal 76: Opening and ending tag mismatch: movies line 2 and moviess
 ");
 
-it('converts Id attribute into an associative array key', function (string $xml, array $expected) {
-    $actual = Converter::create()->convert($xml);
-    expect($actual)->toBe($expected);
-})->with('TestId');
-
 it('converts an XML string without merging @attributes key', function (string $xml, array $expected) {
     $actual = Converter::create(['mergeAttributes' => false])->convert($xml);
     expect($actual)->toBe($expected);
@@ -96,11 +91,6 @@ it('converts an XML string without preserving data types', function (string $xml
     $actual = Converter::create(['typesAsString' => true])->convert($xml);
     expect($actual)->toBe($expected);
 })->with('XmlNoTypes');
-
-it('leave Id attribute as normal attribute', function (string $xml, array $expected) {
-    $actual = Converter::create(['idAsKey' => false])->convert($xml);
-    expect($actual)->toBe($expected);
-})->with('NoIdConversion');
 
 it('converts an XML string preserving the first tag', function () {
     $expected = [

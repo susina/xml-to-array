@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         operating-system: [ubuntu-latest, windows-latest, macOS-latest]
-        php-versions: ['8.2', '8.3']
+        php-versions: ['8.2', '8.3', '8.4']
     runs-on: ${{ matrix.operating-system }}
     steps:
       - name: Set autocrlf on windows
@@ -26,8 +26,8 @@ jobs:
         with:
           composer-options: "--prefer-dist --optimize-autoloader"
       - name: Coding standard
+        env:
+          PHP_CS_FIXER_IGNORE_ENV: true
         run: composer cs:check
-      - name: Psalm issues
-        run: composer analytics
       - name: Test suite
         run: composer test

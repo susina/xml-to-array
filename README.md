@@ -195,7 +195,6 @@ You can configure the converters by passing an associative array to the construc
 The available options are the following:
 
 - [mergeAttributes](#mergeattributes): boolean, default true
-- [idAsKey](#idaskey): boolean, default true
 - [typesAsString](#typesasstring): boolean, default false
 - [preserveFirstTag](#preservefirsttag): boolean, default false
 
@@ -266,97 +265,6 @@ $array = Converter::create(['mergeAttributes' => false])->convert($xmlString);
  *         "type"  => "stream",
  *         "path"  => "/var/log/default.log"
  *         "level" => 300
- *     ]
- * ]
- */
-```
-
-### idAsKey
-
-> Default: __true__
-
-When this option is set to true, the value of an _id_ attribute or tag is considered as the key of an associative array, i.e.:
-
-```php
-<?php declare(strict_types=1);
-
-$xmlString = "
-<?xml version='1.0' standalone='yes'?>
-<movies>
-    <movie>
-        <title>Star Wars</title>
-        <starred>True</starred>
-        <actor id=\"actorH\" name=\"Harrison Ford\" />
-        <actor id=\"actorM\" name=\"Mark Hamill\" />
-        <actor>
-            <id>actorC</id>
-            <name>Carrie Fisher</name>
-        </actor>
-    </movie>
-</movies>";
-
-//idAsKey is true by default
-$array = Converter::create()->convert($xmlString);
-
-/*
- * $array now contains the following array:
- * 
- * 'movie' => [
- *     0 => [
- *         'title' => 'Star Wars',
- *         'starred' => true,
- *         'actorH' => ['name' => 'Harrison Ford'],
- *         'actorM' => ['name' => 'Mark Hamill'],
- *         'actorC' => ['name' => 'Carrie Fisher']
- *     ]
- * ]
- */
-```
-
-Otherwise, if you set this option to _false_ no magic happens:
-
-```php
-<?php declare(strict_types=1);
-
-$xmlString = "
-<?xml version='1.0' standalone='yes'?>
-<movies>
-    <movie>
-        <title>Star Wars</title>
-        <starred>True</starred>
-        <actor id=\"actorH\" name=\"Harrison Ford\" />
-        <actor id=\"actorM\" name=\"Mark Hamill\" />
-        <actor>
-            <id>actorC</id>
-            <name>Carrie Fisher</name>
-        </actor>
-    </movie>
-</movies>";
-
-$converter = new Converter(['idAsKey' => false]);
-$array = $converter->convert($xmlString);
-
-/*
- * $array now contains the following array:
- * 
- * 'movie' => [
- *     0 => [
- *         'title' => 'Star Wars',
- *         'starred' => true,
- *         'actor' => [
- *             0 => [
- *                 'id' => 'actorH',
- *                 'name' => 'Harrison Ford'
- *             ],
- *             1 => [
- *                 'id' => 'actorM',
- *                 'name' => 'Mark Hamill'
- *             ],
- *             2 => [
- *                 'id' => 'actorC',
- *                 'name' => 'Carrie Fisher'
- *             ]
- *         ]
  *     ]
  * ]
  */
