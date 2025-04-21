@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 /*
- * Copyright (c) Cristiano Cinotti 2024.
+ * Copyright (c) Cristiano Cinotti 2024 - 2025.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 
 namespace Susina\XmlToArray;
 
-class FileConverter
+final class FileConverter
 {
     private Converter $converter;
 
@@ -47,9 +47,7 @@ class FileConverter
      */
     public function convert(string $xmlFile): array
     {
-        $this->assertValidFile($xmlFile);
-
-        return $this->converter->convert(file_get_contents($xmlFile));
+        return $this->converter->convert($this->readXmlFile($xmlFile));
     }
 
     /**
@@ -62,17 +60,15 @@ class FileConverter
      */
     public function convertAndSave(string $xmlFile, string $saveFile): void
     {
-        $this->assertValidFile($xmlFile);
-
-        $this->converter->convertAndSave(file_get_contents($xmlFile), $saveFile);
+        $this->converter->convertAndSave($this->readXmlFile($xmlFile), $saveFile);
     }
 
     /**
-     * Check if a file exists and is readable
+     * Read the content of a given xml file.
      *
-     * @throws \RuntimeException If the file is not writeable or the directory doesn't exist.
+     * @throws \RuntimeException If the file is not writeable, the directory doesn't exist or any other problem in reading the file.
      */
-    private function assertValidFile(string $filename): void
+    private function readXmlFile(string $filename): string
     {
         if (!file_exists($filename)) {
             throw new \RuntimeException("The file `$filename` does not exist.");
@@ -81,5 +77,13 @@ class FileConverter
         if (!is_readable($filename)) {
             throw new \RuntimeException("The file `$filename` is not readable: do you have the correct permissions?");
         }
+
+        $content = file_get_contents($filename);
+
+        if ($content === false) {
+            throw new \RuntimeException("Impossible to read `$filename` file.");
+        }
+
+        return $content;
     }
 }

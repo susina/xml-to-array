@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 /*
- * Copyright (c) Cristiano Cinotti 2024.
+ * Copyright (c) Cristiano Cinotti 2024 - 2025.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 
 namespace Susina\XmlToArray\Exception;
 
-class ConverterException extends \RuntimeException
+final class ConverterException extends \RuntimeException
 {
     /**
      * Create an exception based on LibXMLError objects
