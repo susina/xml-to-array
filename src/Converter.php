@@ -1,6 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /*
- * Copyright (c) Cristiano Cinotti 2024 - 2025.
+ * Copyright (c) Cristiano Cinotti 2024 - 2026.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -60,8 +62,9 @@ final class Converter
         $array = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
         $array = $this->options['mergeAttributes'] === true ? $this->mergeAttributes($array) : $array;
-        $array = $this->options['typesAsString'] === false ? $this->convertBool($array) : $array;
-        $array = $this->options['typesAsString'] === false ? $this->convertEmptyArrayToNull($array) : $this->convertEmptyArrayToNull($array, true);
+        $array = $this->options['typesAsString'] === false
+            ? $this->convertBool($array) |> $this->convertEmptyArrayToNull(...)
+            : $array;
 
         return $array;
     }
@@ -102,7 +105,7 @@ return " . var_export($array, true) . ";
         $resolver->setDefaults([
             'mergeAttributes' => true,
             'typesAsString' => false,
-            'preserveFirstTag' => false
+            'preserveFirstTag' => false,
         ]);
 
         $resolver->setAllowedTypes('mergeAttributes', 'bool');
@@ -112,6 +115,10 @@ return " . var_export($array, true) . ";
 
     /**
      * Parse an XML string and return the relative SimpleXmlElement object.
+     *
+     * @param string $xmlToParse The XML to parse.
+     * @return SimpleXMLElement
+     * @throws ConverterException If errors while parsing XML.
      */
     private function getSimpleXml(string $xmlToParse): SimpleXMLElement
     {
@@ -137,7 +144,8 @@ return " . var_export($array, true) . ";
     /**
      * Merge '@attributes' array into parent.
      *
-     * @psalm-suppress MixedAssignment
+     * @param array $array The array to merge attributes into.
+     * @return array The array with merged attributes.
      */
     private function mergeAttributes(array $array): array
     {
@@ -160,15 +168,16 @@ return " . var_export($array, true) . ";
      * Convert all truely and falsy strings ('True', 'False' etc.)
      * into boolean values.
      *
-     * @psalm-suppress MixedAssignment
+     * @param array $array The array to convert.
+     * @return array The array with converted boolean values.
      */
     private function convertBool(array $array): array
     {
         array_walk_recursive($array, function (mixed &$value): void {
-            $value = match(true) {
+            $value = match (true) {
                 is_string($value) && strtolower($value) === 'true' => true,
                 is_string($value) && strtolower($value) === 'false' => false,
-                default => $value
+                default => $value,
             };
         });
 
@@ -181,7 +190,7 @@ return " . var_export($array, true) . ";
             return match (true) {
                 $value === [] => $toString ? 'null' : null,
                 is_array($value) => $this->convertEmptyArrayToNull($value),
-                default => $value
+                default => $value,
             };
         }, $array);
     }
@@ -189,12 +198,12 @@ return " . var_export($array, true) . ";
     private function normalizeXml(string $xml): string
     {
         $xml = preg_replace_callback_array([
-            '/<\?([\\s\\S]*?)\?>/' => fn (): string => '',  //Remove header
-            '/<!--([\\s\\S]*?)-->/' => fn (): string => '', //Remove comments
+            '/<\?([\\s\\S]*?)\?>/' => fn(): string => '',  //Remove header
+            '/<!--([\\s\\S]*?)-->/' => fn(): string => '', //Remove comments
             '/<!\[CDATA\[([\\s\\S]*?)\]\]>/' => function (array $matches): string {
                 /** @var string $matches[1] */
                 return str_replace(['<', '>'], ['&lt;', '&gt;'], $matches[1]);
-            } //Convert CDATA into escaped strings
+            }, //Convert CDATA into escaped strings
         ], $xml);
 
         $xml = $xml ?? '';

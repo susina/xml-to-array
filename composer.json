@@ -10,11 +10,11 @@
         }
     ],
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.5",
         "ext-libxml": "*",
         "ext-simplexml": "*",
         "ext-dom": "*",
-        "symfony/options-resolver": "^7.1"
+        "symfony/options-resolver": "^8.1"
     },
     "autoload": {
         "psr-4": {
@@ -27,13 +27,11 @@
         }
     },
     "require-dev": {
-        "psalm/phar": "^6",
-        "susina/coding-standard": "^2",
-        "pestphp/pest": "^2.35",
+        "pestphp/pest": "^5",
         "mikey179/vfsstream": "^1.6"
     },
     "scripts": {
-        "analytics": "php vendor/bin/psalm.phar",
+        "analytics": "tools/phpstan",
         "check": [
             "@test",
             "@analytics",
@@ -42,8 +40,8 @@
         "coverage": "@test --coverage",
         "coverage:html": "@test --coverage-html coverage/",
         "coverage:clover": "@test --coverage-clover clover.xml",
-        "cs:check": "php-cs-fixer fix -v --diff --dry-run",
-        "cs:fix": "php-cs-fixer fix -v --diff",
+        "cs:check": "tools/php-cs-fixer fix -v --diff --dry-run",
+        "cs:fix": "tools/php-cs-fixer fix -v --diff",
         "test": "pest"
     },
     "scripts-descriptions": {

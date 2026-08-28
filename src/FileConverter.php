@@ -1,6 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /*
- * Copyright (c) Cristiano Cinotti 2024 - 2025.
+ * Copyright (c) Cristiano Cinotti 2024 - 2026.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -78,12 +80,12 @@ final class FileConverter
             throw new \RuntimeException("The file `$filename` is not readable: do you have the correct permissions?");
         }
 
-        $content = file_get_contents($filename);
-
+        return file_get_contents($filename);
+/*
         if ($content === false) {
             throw new \RuntimeException("Impossible to read `$filename` file.");
         }
 
-        return $content;
+        return $content;*/
     }
 }
