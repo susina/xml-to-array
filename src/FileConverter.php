@@ -1,6 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /*
- * Copyright (c) Cristiano Cinotti 2024 - 2025.
+ * Copyright (c) Cristiano Cinotti 2024 - 2026.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,6 +23,9 @@ final class FileConverter
 
     /**
      * Static constructor.
+     *
+     * @param mixed[] $options Options to configure the converter.
+     * @see Susina\XmlToArray\Converter::__construct()
      */
     public static function create(array $options = []): self
     {
@@ -28,6 +33,7 @@ final class FileConverter
     }
 
     /**
+     * @param mixed[] $options Options to configure the converter.
      * @see Susina\XmlToArray\Converter::__construct()
      */
     public function __construct(array $options = [])
@@ -40,7 +46,7 @@ final class FileConverter
      *
      * @param string $xmlFile The XML file to parse.
      *
-     * @return array
+     * @return mixed[] The parsed array.
      *
      * @throws \RuntimeException If the file does not exist or it's not readable.
      *

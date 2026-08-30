@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /*
  * Copyright (c) Cristiano Cinotti 2024 - 2025.
  *
@@ -46,21 +48,21 @@ dataset('XmlNoTypes', [
     </logger>
   </log>
 </config>", [
-        'log' => [
-            'logger' => [
-                [
-                    'name' => 'defaultLogger',
-                    'type' => 'stream',
-                    'path' => '/var/log/default.log',
-                    'level' => '300',
+            'log' => [
+                'logger' => [
+                    [
+                        'name' => 'defaultLogger',
+                        'type' => 'stream',
+                        'path' => '/var/log/default.log',
+                        'level' => '300',
+                    ],
+                    [
+                        'name' => 'bookstore',
+                        'type' => 'stream',
+                        'path' => '/var/log/bookstore.log',
+                    ],
                 ],
-                [
-                    'name' => 'bookstore',
-                    'type' => 'stream',
-                    'path' => '/var/log/bookstore.log',
-                ],
-            ],
-        ]]
+            ]],
     ],
     [
         "<config>
@@ -69,13 +71,13 @@ dataset('XmlNoTypes', [
         <table name=\"table2\"></table>
     </database>
 </config>", [
-        'database' => [
-            'name' => 'TestDb',
-            'table' => [
-                0 => ['name' => 'table1'],
-                1 => ['name' => 'table2']
+            'database' => [
+                'name' => 'TestDb',
+                'table' => [
+                    0 => ['name' => 'table1'],
+                    1 => ['name' => 'table2'],
+                ],
             ],
-        ]
-    ]
-    ]
+        ],
+    ],
 ]);

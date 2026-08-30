@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /*
  * Copyright (c) Cristiano Cinotti 2024 - 2025.
  *
@@ -29,25 +31,25 @@ dataset('XmlWithAttributes', [
     </logger>
   </log>
 </config>", [
-        'log' => [
-            'logger' => [
-                [
-                    '@attributes' => [
-                        'name' => 'defaultLogger'
+            'log' => [
+                'logger' => [
+                    [
+                        '@attributes' => [
+                            'name' => 'defaultLogger',
+                        ],
+                        'type' => 'stream',
+                        'path' => '/var/log/default.log',
+                        'level' => 300,
                     ],
-                    'type' => 'stream',
-                    'path' => '/var/log/default.log',
-                    'level' => 300,
-                ],
-                [
-                    '@attributes' => [
-                        'name' => 'bookstore'
+                    [
+                        '@attributes' => [
+                            'name' => 'bookstore',
+                        ],
+                        'type' => 'stream',
+                        'path' => '/var/log/bookstore.log',
                     ],
-                    'type' => 'stream',
-                    'path' => '/var/log/bookstore.log',
                 ],
-            ],
-        ]]
+            ]],
     ],
     [
         "<config>
@@ -56,23 +58,23 @@ dataset('XmlWithAttributes', [
         <table name=\"table2\"></table>
     </database>
 </config>", [
-        'database' => [
-            '@attributes' => [
-                'name' => 'TestDb'
-            ],
-            'table' => [
-                0 => [
-                    '@attributes' => [
-                        'name' => 'table1'
-                    ]
+            'database' => [
+                '@attributes' => [
+                    'name' => 'TestDb',
                 ],
-                1 => [
-                    '@attributes' => [
-                        'name' => 'table2'
-                    ]
-                ]
+                'table' => [
+                    0 => [
+                        '@attributes' => [
+                            'name' => 'table1',
+                        ],
+                    ],
+                    1 => [
+                        '@attributes' => [
+                            'name' => 'table2',
+                        ],
+                    ],
+                ],
             ],
-        ]
-    ]
-    ]
+        ],
+    ],
 ]);

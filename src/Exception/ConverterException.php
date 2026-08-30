@@ -1,6 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /*
- * Copyright (c) Cristiano Cinotti 2024 - 2025.
+ * Copyright (c) Cristiano Cinotti 2024 - 2026.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,19 +28,19 @@ final class ConverterException extends \RuntimeException
      */
     public function __construct(array $errors)
     {
-        $message = (count($errors) === 1 ? 'An error ' : 'Some errors ') .
-            "occurred while parsing XML string:\n"
+        $message = (count($errors) === 1 ? 'An error ' : 'Some errors ')
+            . "occurred while parsing XML string:\n"
         ;
 
         foreach ($errors as $error) {
-            $message .= ' - ' .
-                match ($error->level) {
+            $message .= ' - '
+                . match ($error->level) {
                     LIBXML_ERR_WARNING => "Warning ",
                     LIBXML_ERR_ERROR => "Error ",
-                    LIBXML_ERR_FATAL => "Fatal "
+                    LIBXML_ERR_FATAL => "Fatal ",
+                    default => "Unknown ",
                 }
-            .
-                "$error->code: $error->message"
+            . "$error->code: $error->message"
             ;
         }
 

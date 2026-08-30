@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /*
  * Copyright (c) Cristiano Cinotti 2024 - 2025.
  *
@@ -46,21 +48,21 @@ dataset('Xml', [
     </logger>
   </log>
 </config>", [
-        'log' => [
-            'logger' => [
-                [
-                    'name' => 'defaultLogger',
-                    'type' => 'stream',
-                    'path' => '/var/log/default.log',
-                    'level' => 300,
+            'log' => [
+                'logger' => [
+                    [
+                        'name' => 'defaultLogger',
+                        'type' => 'stream',
+                        'path' => '/var/log/default.log',
+                        'level' => 300,
+                    ],
+                    [
+                        'name' => 'bookstore',
+                        'type' => 'stream',
+                        'path' => '/var/log/bookstore.log',
+                    ],
                 ],
-                [
-                    'name' => 'bookstore',
-                    'type' => 'stream',
-                    'path' => '/var/log/bookstore.log',
-                ],
-            ],
-        ]]
+            ]],
     ],
     [
         "<config>
@@ -69,14 +71,14 @@ dataset('Xml', [
         <table name=\"table2\"></table>
     </database>
 </config>", [
-        'database' => [
-            'name' => 'TestDb',
-            'table' => [
-                0 => ['name' => 'table1'],
-                1 => ['name' => 'table2']
+            'database' => [
+                'name' => 'TestDb',
+                'table' => [
+                    0 => ['name' => 'table1'],
+                    1 => ['name' => 'table2'],
+                ],
             ],
-        ]
-    ]
+        ],
     ],
     [
         '<?xml version="1.0"?><root><!-- This is a comment --><node>foo</node></root>',
@@ -88,14 +90,14 @@ dataset('Xml', [
     ],
     [
         '<?xml version="1.0"?><root><node>0</node></root>',
-        ['node' => 0]
+        ['node' => 0],
     ],
     [
         '<?xml version="1.0"?><root><node /></root>',
-        ['node' => null]
+        ['node' => null],
     ],
     [
         '<?xml version="1.0"?><root><node><![CDATA[<salutation>Hello World!</salutation>]]></node></root>',
-        ['node' => '<salutation>Hello World!</salutation>']
-    ]
+        ['node' => '<salutation>Hello World!</salutation>'],
+    ],
 ]);
