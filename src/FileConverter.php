@@ -23,7 +23,7 @@ final class FileConverter
 
     /**
      * Static constructor.
-     * 
+     *
      * @param mixed[] $options Options to configure the converter.
      * @see Susina\XmlToArray\Converter::__construct()
      */
@@ -85,8 +85,8 @@ final class FileConverter
         }
 
         $content = file_get_contents($filename);
-        
-        if($content === false) {
+
+        if ($content === false) {
             throw new \RuntimeException("Impossible to read `$filename` file.");
         }
 

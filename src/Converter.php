@@ -33,7 +33,7 @@ final class Converter
 
     /**
      * Static constructor.
-     * 
+     *
      * @param mixed[] $options Options to configure the converter.
      * @see Susina\XmlToArray\Converter::__construct()
      * @return self
@@ -167,7 +167,7 @@ return " . var_export($array, true) . ";
         /** @var mixed $value */
         foreach ($array as $key => $value) {
             if ($key === '@attributes') {
-                /** 
+                /**
                  * @var mixed[] $value If the key is '@attributes', we expect the value to be an array of attributes.
                  * We merge this array into the parent array.
                  * This is done to simplify the structure of the resulting array, making it easier to access
@@ -205,7 +205,7 @@ return " . var_export($array, true) . ";
 
     /**
      * Convert all empty arrays into null values.
-     * 
+     *
      * @param mixed[] $array The array to convert.
      * @return mixed[] The array with converted values.
      */
@@ -222,7 +222,7 @@ return " . var_export($array, true) . ";
 
     /**
      * Normalize an XML string by removing headers, comments, and converting CDATA into escaped strings.
-     * 
+     *
      * @param string $xml The XML string to normalize.
      * @return string The normalized XML string.
      */
