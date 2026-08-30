@@ -38,6 +38,7 @@ final class ConverterException extends \RuntimeException
                     LIBXML_ERR_WARNING => "Warning ",
                     LIBXML_ERR_ERROR => "Error ",
                     LIBXML_ERR_FATAL => "Fatal ",
+                    default => "Unknown ",
                 }
             . "$error->code: $error->message"
             ;

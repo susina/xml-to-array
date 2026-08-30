@@ -22,20 +22,30 @@ use Susina\XmlToArray\Exception\ConverterException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Class to convert an xml string to array
+ * Class to convert an xml string to an array.
  */
 final class Converter
 {
+    /**
+     * @var mixed[] Options to configure the converter.
+     */
     private array $options;
 
     /**
      * Static constructor.
+     * 
+     * @param mixed[] $options Options to configure the converter.
+     * @see Susina\XmlToArray\Converter::__construct()
+     * @return self
      */
     public static function create(array $options = []): self
     {
         return new self($options);
     }
 
+    /**
+     * @param mixed[] $options Options to configure the converter.
+     */
     public function __construct(array $options = [])
     {
         $resolver = new OptionsResolver();
@@ -48,8 +58,7 @@ final class Converter
      *
      * @param string $xmlToParse The XML to parse.
      *
-     * @return array
-     *
+     * @return mixed[] The parsed array.
      * @throws ConverterException If errors while parsing XML.
      */
     public function convert(string $xmlToParse): array
@@ -58,7 +67,7 @@ final class Converter
         $flags = JSON_THROW_ON_ERROR | ($this->options['typesAsString'] === false ? JSON_NUMERIC_CHECK : 0);
 
         $content = json_encode($this->getSimpleXml($xmlToParse), $flags);
-        /** @var array $array */
+        /** @var mixed[] $array */
         $array = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
         $array = $this->options['mergeAttributes'] === true ? $this->mergeAttributes($array) : $array;
@@ -100,6 +109,11 @@ return " . var_export($array, true) . ";
         file_put_contents($filename, $content);
     }
 
+    /**
+     * Configure the options for the converter.
+     *
+     * @param OptionsResolver $resolver The options resolver.
+     */
     private function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
@@ -126,7 +140,7 @@ return " . var_export($array, true) . ";
 
         $xml = simplexml_load_string($xmlToParse);
         if ($xml instanceof SimpleXMLElement) {
-            dom_import_simplexml($xml)->ownerDocument->xinclude();
+            dom_import_simplexml($xml)->ownerDocument?->xinclude();
         }
 
         $errors = libxml_get_errors();
@@ -144,8 +158,8 @@ return " . var_export($array, true) . ";
     /**
      * Merge '@attributes' array into parent.
      *
-     * @param array $array The array to merge attributes into.
-     * @return array The array with merged attributes.
+     * @param mixed[] $array The array to merge attributes into.
+     * @return mixed[] The array with merged attributes.
      */
     private function mergeAttributes(array $array): array
     {
@@ -153,7 +167,12 @@ return " . var_export($array, true) . ";
         /** @var mixed $value */
         foreach ($array as $key => $value) {
             if ($key === '@attributes') {
-                /** @var array $value */
+                /** 
+                 * @var mixed[] $value If the key is '@attributes', we expect the value to be an array of attributes.
+                 * We merge this array into the parent array.
+                 * This is done to simplify the structure of the resulting array, making it easier to access
+                 * the attributes of an XML element without having to navigate through a nested '@attributes' key
+                 */
                 $out = array_merge($out, $value);
                 continue;
             }
@@ -168,8 +187,8 @@ return " . var_export($array, true) . ";
      * Convert all truely and falsy strings ('True', 'False' etc.)
      * into boolean values.
      *
-     * @param array $array The array to convert.
-     * @return array The array with converted boolean values.
+     * @param mixed[] $array The array to convert.
+     * @return mixed[] The array with converted boolean values.
      */
     private function convertBool(array $array): array
     {
@@ -184,6 +203,12 @@ return " . var_export($array, true) . ";
         return $array;
     }
 
+    /**
+     * Convert all empty arrays into null values.
+     * 
+     * @param mixed[] $array The array to convert.
+     * @return mixed[] The array with converted values.
+     */
     private function convertEmptyArrayToNull(array $array, bool $toString = false): array
     {
         return array_map(function (mixed $value) use ($toString) {
@@ -195,13 +220,19 @@ return " . var_export($array, true) . ";
         }, $array);
     }
 
+    /**
+     * Normalize an XML string by removing headers, comments, and converting CDATA into escaped strings.
+     * 
+     * @param string $xml The XML string to normalize.
+     * @return string The normalized XML string.
+     */
     private function normalizeXml(string $xml): string
     {
         $xml = preg_replace_callback_array([
             '/<\?([\\s\\S]*?)\?>/' => fn(): string => '',  //Remove header
             '/<!--([\\s\\S]*?)-->/' => fn(): string => '', //Remove comments
             '/<!\[CDATA\[([\\s\\S]*?)\]\]>/' => function (array $matches): string {
-                /** @var string $matches[1] */
+                /** @var string[] $matches */
                 return str_replace(['<', '>'], ['&lt;', '&gt;'], $matches[1]);
             }, //Convert CDATA into escaped strings
         ], $xml);

@@ -23,6 +23,9 @@ final class FileConverter
 
     /**
      * Static constructor.
+     * 
+     * @param mixed[] $options Options to configure the converter.
+     * @see Susina\XmlToArray\Converter::__construct()
      */
     public static function create(array $options = []): self
     {
@@ -30,6 +33,7 @@ final class FileConverter
     }
 
     /**
+     * @param mixed[] $options Options to configure the converter.
      * @see Susina\XmlToArray\Converter::__construct()
      */
     public function __construct(array $options = [])
@@ -42,7 +46,7 @@ final class FileConverter
      *
      * @param string $xmlFile The XML file to parse.
      *
-     * @return array
+     * @return mixed[] The parsed array.
      *
      * @throws \RuntimeException If the file does not exist or it's not readable.
      *
@@ -80,12 +84,12 @@ final class FileConverter
             throw new \RuntimeException("The file `$filename` is not readable: do you have the correct permissions?");
         }
 
-        return file_get_contents($filename);
-/*
-        if ($content === false) {
+        $content = file_get_contents($filename);
+        
+        if($content === false) {
             throw new \RuntimeException("Impossible to read `$filename` file.");
         }
 
-        return $content;*/
+        return $content;
     }
 }
