@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /*
- * Copyright (c) Cristiano Cinotti 2024 - 2025.
+ * Copyright (c) Cristiano Cinotti 2024 - 2026.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,14 +15,24 @@ declare(strict_types=1);
  *  limitations under the License.
  */
 
+namespace Susina\XmlToArray\Tests\Functional;
+
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use PHPUnit\Framework\TestCase;
 use Susina\XmlToArray\Converter;
+use Susina\XmlToArray\Tests\XmlToArrayDataProvider;
 
-it('converts real life XML files', function (string $file) {
-    $phpFile = __DIR__ . "/../Fixtures/$file.php";
-    $xmlFile = __DIR__ . "/../Fixtures/$file.xml";
+class ConversionTest extends TestCase
+{
+    #[DataProviderExternal(XmlToArrayDataProvider::class, 'realCaseProvider')]
+    public function testRealLifeXmlConversion(string $file): void
+    {
+        $phpFile = __DIR__ . "/../Fixtures/$file.php";
+        $xmlFile = __DIR__ . "/../Fixtures/$file.xml";
 
-    $expected = include($phpFile);
-    $actual = Converter::create()->convert(file_get_contents($xmlFile));
+        $expected = include($phpFile);
+        $actual = Converter::create()->convert(file_get_contents($xmlFile));
 
-    expect($actual)->toBe($expected);
-})->with(['joomla', 'propel']);
+        $this->assertSame($expected, $actual);
+    }
+}

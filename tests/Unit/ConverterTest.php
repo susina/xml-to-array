@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 /*
- * Copyright (c) Cristiano Cinotti 2024 - 2025.
+ * Copyright (c) Cristiano Cinotti 2024 - 2026.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,42 +15,80 @@ declare(strict_types=1);
  *  limitations under the License.
  */
 
+namespace Susina\XmlToArray\Tests\Unit;
+
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Susina\XmlToArray\Exception\ConverterException;
 use Susina\XmlToArray\Converter;
+use Susina\XmlToArray\Tests\VfsTestCase;
+use Susina\XmlToArray\Tests\XmlToArrayDataProvider;
 
-beforeEach(function () {
-    $this->converter = new Converter();
-});
+class ConverterTest extends VfsTestCase
+{
+    private Converter $converter;
+    public function setUp(): void
+    {
+        $this->converter = new Converter();
+    }
 
-it('instantiate the correct class, via static constructor', function () {
-    expect(Converter::create())->toBeInstanceOf(Converter::class);
-});
+    public function testStaticConstructor(): void
+    {
+        $this->assertInstanceOf(Converter::class, Converter::create());
+    }
 
-it('converts xml to array', function (string $xml, array $expected) {
-    $actual = $this->converter->convert($xml);
-    expect($actual)->toBe($expected);
-})->with('Xml');
+    #[DataProviderExternal(XmlToArrayDataProvider::class, 'xmlProvider')]
+    public function testConvertXmlToArray(string $xml, array $expected): void
+    {
+        $actual = $this->converter->convert($xml);
+        $this->assertSame($expected, $actual);
+    }
 
-it('converts xml with inclusion', function (string $xmlLoad, string $xmlInclude, array $expected) {
-    vfsStream::newFile('testconvert_include.xml')->at($this->getRoot())->setContent($xmlInclude);
-    $actual = $this->converter->convert($xmlLoad);
-    expect($actual)->toBe($expected);
-})->with('Inclusion');
+    public function testConvertXmlWithInclusions(): void
+    {
+        $xmlLoad = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<database name=\"named\" defaultIdMethod=\"native\">
+    <xi:include xmlns:xi=\"http://www.w3.org/2001/XInclude\" 
+        href=\"{$this->getIncludedFile()->url()}\" xpointer=\"xpointer( /database/* )\" 
+    />
+</database>";
+        $expected = [
+            'name' => 'named',
+            'defaultIdMethod' => 'native',
+            'table' => [
+                'name' => 'book',
+                'phpName' => 'Book',
+            ],
+        ];
+        $actual = $this->converter->convert($xmlLoad);
 
-it('converts an invalid xml', function () {
-    $invalidXml = <<< INVALID_XML
+        $this->assertSame($expected, $actual);
+    }
+
+    public function testInvalidXmlThrowsException(): void
+    {
+        $this->expectException(ConverterException::class);
+        $this->expectExceptionMessageIsOrContains(
+            "An error occurred while parsing XML string:
+ - Fatal 4: Start tag expected, '<' not found
+",
+        );
+        $invalidXml = <<< INVALID_XML
 No xml
 only plain text
 ---------
 INVALID_XML;
-    $this->converter->convert($invalidXml);
-})->throws(ConverterException::class, "An error occurred while parsing XML string:
- - Fatal 4: Start tag expected, '<' not found
-");
 
-it('finds error in xml content', function () {
-    $xmlWithError = <<< XML
+        $this->converter->convert($invalidXml);
+    }
+
+    public function testXmlContentErrorThrowsException(): void
+    {
+        $this->expectException(ConverterException::class);
+        $this->expectExceptionMessageIsOrContains("An error occurred while parsing XML string:
+ - Fatal 76: Opening and ending tag mismatch: titles line 4 and title
+");
+        $xmlWithError = <<< XML
 <?xml version='1.0' standalone='yes'?>
 <movies>
  <movie>
@@ -61,13 +99,21 @@ it('finds error in xml content', function () {
  </movie>
 </movies>
 XML;
-    $this->converter->convert($xmlWithError);
-})->throws(ConverterException::class, "An error occurred while parsing XML string:
- - Fatal 76: Opening and ending tag mismatch: titles line 4 and title
-");
 
-it('finds multiple errors in xml', function () {
-    $xmlWithErrors = <<< XML
+        $this->converter->convert($xmlWithError);
+    }
+
+    public function testMultipleXmlErrorsThrowsException(): void
+    {
+        $this->expectException(ConverterException::class);
+        $this->expectExceptionMessageIsOrContains(
+            "Some errors occurred while parsing XML string:
+ - Fatal 76: Opening and ending tag mismatch: titles line 4 and title
+ - Fatal 76: Opening and ending tag mismatch: movies line 2 and moviess
+",
+        );
+
+        $xmlWithErrors = <<< XML
 <?xml version='1.0' standalone='yes'?>
 <movies>
  <movie>
@@ -78,103 +124,88 @@ it('finds multiple errors in xml', function () {
  </movie>
 </moviess>
 XML;
-    $this->converter->convert($xmlWithErrors);
-})->throws(ConverterException::class, "Some errors occurred while parsing XML string:
- - Fatal 76: Opening and ending tag mismatch: titles line 4 and title
- - Fatal 76: Opening and ending tag mismatch: movies line 2 and moviess
-");
 
-it('converts an XML string without merging @attributes key', function (string $xml, array $expected) {
-    $actual = Converter::create(['mergeAttributes' => false])->convert($xml);
-    expect($actual)->toBe($expected);
-})->with('XmlWithAttributes');
+        $this->converter->convert($xmlWithErrors);
+    }
 
-it('converts an XML string without preserving data types', function (string $xml, array $expected) {
-    $actual = Converter::create(['typesAsString' => true])->convert($xml);
-    expect($actual)->toBe($expected);
-})->with('XmlNoTypes');
+    #[DataProviderExternal(XmlToArrayDataProvider::class, 'xmlWithAttributesProvider')]
+    public function testConvertXmlWithoutMergingAttributes(string $xml, array $expected): void
+    {
+        $actual = Converter::create(['mergeAttributes' => false])->convert($xml);
+        $this->assertSame($expected, $actual);
+    }
 
-it('converts an XML string preserving the first tag', function () {
-    $expected = [
-        'breakfast_menu' => [
-            'food' => [
-                'name' => 'Waffles',
+    #[DataProviderExternal(XmlToArrayDataProvider::class, 'xmlNoTypesProvider')]
+    public function testConvertXmlWithoutPreservingDataTypes(string $xml, array $expected): void
+    {
+        $actual = Converter::create(['typesAsString' => true])->convert($xml);
+        $this->assertSame($expected, $actual);
+    }
+
+    public function testConvertiXmlPreservingTheFirstTag(): void
+    {
+        $expected = [
+            'breakfast_menu' => [
+                'food' => [
+                    'name' => 'Waffles',
+                ],
             ],
-        ],
-    ];
+        ];
 
-    $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
+        $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
 <breakfast_menu>
     <food>
         <name>Waffles</name>
     </food>
-</breakfast_menu>";
+</breakfast_menu>"
+        ;
+        $actual = Converter::create(['preserveFirstTag' => true])->convert($xml);
 
-    $actual = Converter::create(['preserveFirstTag' => true])->convert($xml);
-    expect($actual)->toBe($expected);
-});
+        $this->assertSame($expected, $actual);
+    }
 
-it('converts an xml string and save to a file', function (string $xml, array $expected, string $content) {
-    $file = vfsStream::newFile('saved_file.php')->at($this->getRoot());
+    #[DataProviderExternal(XmlToArrayDataProvider::class, 'convertAndSaveProvider')]
+    public function testConvertXmlAndSavesIntoExistentFile(string $xml, array $expectedArray, string $expectedContent): void
+    {
+        $file = $this->createFile('saved_file.php');
 
-    $this->converter->convertAndSave($xml, $file->url());
+        $this->converter->convertAndSave($xml, $file->url());
+        $actual = include($file->url());
 
-    $actual = include($file->url());
+        $this->assertSame($expectedArray, $actual);
+        $this->assertSame($expectedContent, $file->getContent());
+        $this->assertSame($expectedContent, file_get_contents($file->url()));
+    }
 
-    expect($actual)->toBe($expected)
-        ->and($content)->toBe($file->getContent());
-})->with([
-    ["<?xml version='1.0' standalone='yes'?>
-<movies>
- <movie>
-  <title>Star Wars</title>
-  <starred>True</starred>
-  <percentage>32.5</percentage>
- </movie>
- <movie>
-  <title>The Lord Of The Rings</title>
-  <starred>false</starred>
- </movie>
-</movies>
-",
-        [
-            'movie' => [
-                0 => ['title' => 'Star Wars', 'starred' => true, 'percentage' => 32.5],
-                1 => ['title' => 'The Lord Of The Rings', 'starred' => false],
-            ],
-        ],
-        "<?php declare(strict_types=1);
-/*
- * This file is auto-generated by susina/xml-to-array library.
- */
+    #[DataProviderExternal(XmlToArrayDataProvider::class, 'convertAndSaveProvider')]
+    public function testConvertAndSaveCreatesOutputFileIfNotExistent(string $xml, array $expectedArray, string $expectedContent): void
+    {
+        $this->converter->convertAndSave($xml, $this->root->url() . '/my_saved_file.php');
 
-return array (
-  'movie' => 
-  array (
-    0 => 
-    array (
-      'title' => 'Star Wars',
-      'starred' => true,
-      'percentage' => 32.5,
-    ),
-    1 => 
-    array (
-      'title' => 'The Lord Of The Rings',
-      'starred' => false,
-    ),
-  ),
-);
-",
-    ],
-]);
+        $this->assertFileExists('vfs://root/my_saved_file.php');
 
-it('try to save in a not existent directory', function () {
-    $xml = "<movies><movie><title>The Lord Of The Rings</title><starred>false</starred></movie></movies>";
-    $this->converter->convertAndSave($xml, $this->getRoot()->url() . '/my_dir/my_array.php');
-})->throws(\RuntimeException::class, "The directory `vfs://root/my_dir` does not exist: you should create it before writing a file.");
+        $actual = include($this->root->url() . '/my_saved_file.php');
 
-it('try to save in a not writeable directory', function () {
-    $dir = vfsStream::newDirectory('xml_dir', 000)->at($this->getRoot());
-    $xml = "<movies><movie><title>The Lord Of The Rings</title><starred>false</starred></movie></movies>";
-    $this->converter->convertAndSave($xml, $dir->url() . '/my_array.php');
-})->throws(\RuntimeException::class, "It's impossible to write into `vfs://root/xml_dir` directory: do you have the correct permissions?");
+        $this->assertSame($expectedArray, $actual);
+        $this->assertSame($expectedContent, file_get_contents($this->root->url() . '/my_saved_file.php'));
+    }
+
+    public function testSaveInNotExistentDirectoryThrowsException(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageIs("The directory `vfs://root/my_dir` does not exist: you should create it before writing a file.");
+
+        $xml = "<movies><movie><title>The Lord Of The Rings</title><starred>false</starred></movie></movies>";
+        $this->converter->convertAndSave($xml, $this->root->url() . '/my_dir/my_array.php');
+    }
+
+    public function testSaveInNotWriteableDirectoryThrowsException(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageIs("It's impossible to write into `vfs://root/xml_dir` directory: do you have the correct permissions?");
+
+        $dir = vfsStream::newDirectory('xml_dir', 000)->at($this->root);
+        $xml = "<movies><movie><title>The Lord Of The Rings</title><starred>false</starred></movie></movies>";
+        $this->converter->convertAndSave($xml, $dir->url() . '/my_array.php');
+    }
+}
